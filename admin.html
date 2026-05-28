@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ShopAssist AI — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;
+  --accent:#6c63ff;--accent2:#ff6584;--accent3:#43e97b;--accent4:#f9ca24;
+  --text:#e8e8f0;--text-muted:#7a7a9a;--glow:0 0 30px rgba(108,99,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 50% 30% at 80% 10%,rgba(108,99,255,0.08) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+/* Header */
+header{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;background:rgba(10,10,15,0.95);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+}
+.header-left{display:flex;align-items:center;gap:14px;}
+.logo-icon{
+  width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;
+  box-shadow:var(--glow);
+}
+.logo h1{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo p{font-size:10px;color:var(--text-muted);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.admin-badge{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(249,202,36,0.1);border:1px solid rgba(249,202,36,0.3);
+  border-radius:20px;padding:5px 12px;font-size:11px;color:var(--accent4);font-weight:500;
+}
+.admin-dot{width:6px;height:6px;background:var(--accent4);border-radius:50%;animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.header-btn{
+  padding:7px 14px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border);color:var(--text-muted);
+  font-size:12px;text-decoration:none;transition:all 0.2s;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+.header-btn:hover{color:var(--text);border-color:var(--accent);}
+
+/* Layout */
+.dashboard{position:relative;z-index:1;display:flex;flex:1;}
+
+/* Sidebar */
+.sidebar{
+  width:220px;flex-shrink:0;
+  border-right:1px solid var(--border);
+  background:rgba(13,13,20,0.8);
+  padding:20px 12px;
+  height:calc(100vh - 65px);
+  position:sticky;top:65px;
+  overflow-y:auto;
+}
+.sidebar-section{margin-bottom:8px;}
+.sidebar-label{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;padding:6px 8px;margin-bottom:4px;}
+.sidebar-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:9px;
+  font-size:13px;color:var(--text-muted);cursor:pointer;
+  transition:all 0.2s;margin-bottom:2px;text-decoration:none;
+}
+.sidebar-item:hover,.sidebar-item.active{background:var(--surface2);color:var(--text);}
+.sidebar-item.active{border-left:2px solid var(--accent);color:var(--accent);}
+.sidebar-badge{
+  margin-left:auto;background:var(--accent);
+  border-radius:10px;padding:1px 7px;font-size:10px;color:#fff;
+}
+
+/* Main content */
+.main-content{flex:1;padding:28px 32px;overflow-y:auto;}
+
+/* Page title */
+.page-title{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.page-title h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.page-title p{font-size:12px;color:var(--text-muted);margin-top:4px;}
+.refresh-btn{
+  padding:8px 16px;border-radius:10px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text-muted);font-size:12px;cursor:pointer;
+  transition:all 0.2s;font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;gap:6px;
+}
+.refresh-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:18px;transition:all 0.3s;
+  animation:fadeSlideUp 0.4s ease both;
+}
+.stat-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+.stat-label{font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:500;}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:4px;}
+.stat-change{font-size:11px;display:flex;align-items:center;gap:4px;}
+.stat-change.up{color:var(--accent3);}
+.stat-change.down{color:var(--accent2);}
+
+/* Content row */
+.content-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+
+/* Chart card */
+.chart-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:20px;animation:fadeSlideUp 0.5s ease both;
+}
+.chart-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.chart-card p{font-size:11px;color:var(--text-muted);margin-bottom:18px;}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:100px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.bar{
+  width:100%;border-radius:4px 4px 0 0;
+  background:linear-gradient(to top,var(--accent),rgba(108,99,255,0.3));
+  transition:height 0.6s ease;
+  position:relative;cursor:pointer;
+}
+.bar:hover::after{
+  content:attr(data-val);
+  position:absolute;top:-24px;left:50%;transform:translateX(-50%);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:5px;padding:2px 6px;font-size:10px;color:var(--text);
+  white-space:nowrap;
+}
+.bar-label{font-size:9px;color:var(--text-muted);}
+
+/* Category donut chart */
+.donut-wrap{display:flex;align-items:center;gap:20px;}
+.donut{width:100px;height:100px;position:relative;flex-shrink:0;}
+.donut svg{transform:rotate(-90deg);}
+.donut-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.donut-num{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
+.donut-sub{font-size:9px;color:var(--text-muted);}
+.donut-legend{flex:1;}
+.legend-item{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;
+}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.legend-bar{flex:1;height:4px;border-radius:4px;background:var(--surface2);}
+.legend-bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease;}
+.legend-pct{font-size:11px;color:var(--text-muted);margin-left:4px;}
+
+/* Conversations table */
+.table-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:20px;margin-bottom:18px;
+  animation:fadeSlideUp 0.5s ease 0.2s both;
+}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.table-header h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+.view-all{font-size:11px;color:var(--accent);cursor:pointer;text-decoration:none;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;padding:6px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:11px 12px;font-size:12.5px;border-bottom:1px solid rgba(42,42,61,0.5);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(108,99,255,0.04);}
+.status-pill{
+  padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;
+  font-family:'Syne',sans-serif;
+}
+.status-resolved{background:rgba(67,233,123,0.15);color:var(--accent3);border:1px solid rgba(67,233,123,0.3);}
+.status-pending{background:rgba(255,101,132,0.15);color:var(--accent2);border:1px solid rgba(255,101,132,0.3);}
+.status-ongoing{background:rgba(108,99,255,0.15);color:var(--accent);border:1px solid rgba(108,99,255,0.3);}
+.cat-tag{
+  padding:2px 8px;border-radius:5px;font-size:10px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);
+}
+
+/* Alerts */
+.alerts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px;}
+.alert-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px;transition:all 0.2s;
+  animation:fadeSlideUp 0.4s ease 0.3s both;
+}
+.alert-card.warning{border-color:rgba(255,165,0,0.3);background:rgba(255,165,0,0.05);}
+.alert-card.error{border-color:rgba(255,101,132,0.3);background:rgba(255,101,132,0.05);}
+.alert-card.success{border-color:rgba(67,233,123,0.3);background:rgba(67,233,123,0.05);}
+.alert-icon{font-size:22px;margin-bottom:8px;}
+.alert-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;}
+.alert-desc{font-size:11px;color:var(--text-muted);line-height:1.5;}
+
+/* CSAT ring */
+.csat-ring{display:flex;align-items:center;gap:16px;}
+.ring-chart{width:80px;height:80px;position:relative;}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-pct{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--accent3);}
+.ring-label{font-size:8px;color:var(--text-muted);}
+
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:1024px){.stats-grid{grid-template-columns:1fr 1fr;}.content-row{grid-template-columns:1fr;}.alerts-row{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main-content{padding:20px;}.stats-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-icon">🛍️</div>
+    <div class="logo">
+      <h1>ShopAssist AI</h1>
+      <p>Admin Dashboard</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="admin-badge">
+      <div class="admin-dot"></div>
+      Admin Access
+    </div>
+    <a href="chat.html" class="header-btn">💬 Support Chat</a>
+    <a href="index.html" class="header-btn">← Home</a>
+  </div>
+</header>
+
+<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <div class="sidebar-item active">📊 Dashboard</div>
+      <div class="sidebar-item">💬 Conversations <span class="sidebar-badge">12</span></div>
+      <div class="sidebar-item">🚨 Escalations <span class="sidebar-badge" style="background:var(--accent2)">3</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Analytics</div>
+      <div class="sidebar-item">📈 Chat Metrics</div>
+      <div class="sidebar-item">⭐ CSAT Scores</div>
+      <div class="sidebar-item">🏷️ Categories</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Management</div>
+      <a href="products.html" class="sidebar-item">🛍️ Products</a>
+      <div class="sidebar-item">👥 Users</div>
+      <div class="sidebar-item">⚙️ Settings</div>
+    </div>
+    <div class="sidebar-section" style="margin-top:auto;padding-top:20px;">
+      <div class="sidebar-label">System</div>
+      <a href="login.html" class="sidebar-item">🔒 Sign Out</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-title">
+      <div>
+        <h2>📊 Dashboard Overview</h2>
+        <p>Real-time customer support analytics — Last updated just now</p>
+      </div>
+      <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh</button>
+    </div>
+
+    <!-- KPI Stats -->
+    <div class="stats-grid">
+      <div class="stat-card" style="animation-delay:0s;">
+        <div class="stat-label">Total Chats Today</div>
+        <div class="stat-val" id="s1" style="color:var(--accent);">247</div>
+        <div class="stat-change up">▲ 18% vs yesterday</div>
+      </div>
+      <div class="stat-card" style="animation-delay:0.05s;">
+        <div class="stat-label">Avg Response Time</div>
+        <div class="stat-val" id="s2" style="color:var(--accent3);">1.8s</div>
+        <div class="stat-change up">▲ 0.3s faster</div>
+      </div>
+      <div class="stat-card" style="animation-delay:0.1s;">
+        <div class="stat-label">Resolution Rate</div>
+        <div class="stat-val" id="s3" style="color:var(--accent3);">94.2%</div>
+        <div class="stat-change up">▲ 2.1% this week</div>
+      </div>
+      <div class="stat-card" style="animation-delay:0.15s;">
+        <div class="stat-label">Escalations</div>
+        <div class="stat-val" id="s4" style="color:var(--accent2);">3</div>
+        <div class="stat-change down">▼ 5 fewer than avg</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="content-row">
+      <!-- Bar chart -->
+      <div class="chart-card">
+        <h3>Conversations (Last 7 days)</h3>
+        <p>Daily chat volume from AI support</p>
+        <div class="chart-bars" id="bar-chart"></div>
+        <div id="bar-labels" style="display:flex;gap:8px;margin-top:6px;"></div>
+      </div>
+
+      <!-- Category pie -->
+      <div class="chart-card">
+        <h3>Query Categories</h3>
+        <p>Distribution by support topic</p>
+        <div class="donut-wrap">
+          <div class="donut">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <!-- background circle -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#2a2a3d" stroke-width="14"/>
+              <!-- orders: 35% -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#6c63ff" stroke-width="14"
+                stroke-dasharray="83.5 238.8" stroke-dashoffset="0"/>
+              <!-- returns: 25% -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#ff6584" stroke-width="14"
+                stroke-dasharray="59.7 238.8" stroke-dashoffset="-83.5"/>
+              <!-- product: 22% -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#43e97b" stroke-width="14"
+                stroke-dasharray="52.5 238.8" stroke-dashoffset="-143.2"/>
+              <!-- complaint: 18% -->
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#f9ca24" stroke-width="14"
+                stroke-dasharray="43 238.8" stroke-dashoffset="-195.7"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-num">247</div>
+              <div class="donut-sub">today</div>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#6c63ff;"></div>
+              <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Orders</span><span>35%</span></div>
+                <div class="legend-bar"><div class="legend-bar-fill" style="width:35%;background:#6c63ff;"></div></div>
+              </div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#ff6584;"></div>
+              <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Returns</span><span>25%</span></div>
+                <div class="legend-bar"><div class="legend-bar-fill" style="width:25%;background:#ff6584;"></div></div>
+              </div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#43e97b;"></div>
+              <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Products</span><span>22%</span></div>
+                <div class="legend-bar"><div class="legend-bar-fill" style="width:22%;background:#43e97b;"></div></div>
+              </div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#f9ca24;"></div>
+              <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Complaints</span><span>18%</span></div>
+                <div class="legend-bar"><div class="legend-bar-fill" style="width:18%;background:#f9ca24;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSAT + Alerts -->
+    <div class="alerts-row">
+      <div class="alert-card success">
+        <div class="alert-icon">⭐</div>
+        <div class="alert-title">CSAT Score: 4.7/5</div>
+        <div class="alert-desc">Customer satisfaction at all-time high this week. Empathy-first prompting working well.</div>
+      </div>
+      <div class="alert-card warning">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-title">3 Pending Escalations</div>
+        <div class="alert-desc">Complex complaints awaiting human agent review. Avg wait time: 18 min.</div>
+      </div>
+      <div class="alert-card error">
+        <div class="alert-icon">🔴</div>
+        <div class="alert-title">API Note</div>
+        <div class="alert-desc">Production deployment should use backend proxy. API keys should never be client-side.</div>
+      </div>
+    </div>
+
+    <!-- Conversations table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Recent Conversations</h3>
+        <a href="chat.html" class="view-all">View all →</a>
+      </div>
+      <table id="conv-table">
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Category</th>
+            <th>Messages</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>CSAT</th>
+          </tr>
+        </thead>
+        <tbody id="conv-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Second row charts -->
+    <div class="content-row">
+      <div class="chart-card">
+        <h3>Hourly Traffic Today</h3>
+        <p>Peak support hours analysis</p>
+        <div class="chart-bars" id="hourly-chart"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Resolution Speed</h3>
+        <p>How quickly queries are resolved</p>
+        <div style="margin-top:10px;">
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Under 1 minute</span><span style="color:var(--accent3);">68%</span></div>
+            <div style="height:6px;background:var(--surface2);border-radius:4px;"><div style="width:68%;height:100%;background:linear-gradient(90deg,var(--accent3),#2ecc71);border-radius:4px;"></div></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>1–5 minutes</span><span style="color:var(--accent);">22%</span></div>
+            <div style="height:6px;background:var(--surface2);border-radius:4px;"><div style="width:22%;height:100%;background:linear-gradient(90deg,var(--accent),#9b59b6);border-radius:4px;"></div></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>5+ minutes (escalated)</span><span style="color:var(--accent2);">10%</span></div>
+            <div style="height:6px;background:var(--surface2);border-radius:4px;"><div style="width:10%;height:100%;background:linear-gradient(90deg,var(--accent2),#ff8c42);border-radius:4px;"></div></div>
+          </div>
+          <div style="margin-top:20px;padding:14px;background:rgba(67,233,123,0.08);border:1px solid rgba(67,233,123,0.2);border-radius:11px;font-size:12px;line-height:1.6;">
+            <strong>💡 Traditional support</strong> takes 12+ hours avg.<br>
+            <strong style="color:var(--accent3);">ShopAssist AI</strong> resolves 90% under 5 minutes.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// Generate bar chart
+function buildBarChart(id, data, color, labels) {
+  const max = Math.max(...data);
+  const chart = document.getElementById(id);
+  if(!chart) return;
+  chart.innerHTML = '';
+  data.forEach((val, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bar-wrap';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = ((val/max)*90) + 'px';
+    bar.setAttribute('data-val', val);
+    const label = document.createElement('div');
+    label.className = 'bar-label';
+    label.textContent = labels[i];
+    wrap.appendChild(bar);
+    wrap.appendChild(label);
+    chart.appendChild(wrap);
+  });
+}
+
+const weekDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const weekData = [189, 224, 198, 267, 312, 247, 163];
+buildBarChart('bar-chart', weekData, '#6c63ff', weekDays);
+
+const hours = ['6AM','9AM','12PM','3PM','6PM','9PM'];
+const hourData = [12, 45, 67, 78, 89, 56];
+buildBarChart('hourly-chart', hourData, '#43e97b', hours);
+
+// Conversations table
+const categories = ['order','return','product','complaint','general','technical'];
+const statuses = [
+  {label:'Resolved', cls:'status-resolved'},
+  {label:'Resolved', cls:'status-resolved'},
+  {label:'Resolved', cls:'status-resolved'},
+  {label:'Pending', cls:'status-pending'},
+  {label:'Ongoing', cls:'status-ongoing'},
+];
+const catEmoji = {order:'📦',return:'🔄',product:'🔍',complaint:'🚨',general:'💬',technical:'🔧'};
+
+function generateTableRows() {
+  const tbody = document.getElementById('conv-body');
+  // Try to get real data from localStorage
+  const chatLog = JSON.parse(localStorage.getItem('chatLog') || '[]');
+  const tableData = [];
+
+  // Real sessions from localStorage
+  chatLog.slice(-5).reverse().forEach(entry => {
+    tableData.push({
+      session: entry.session,
+      cat: entry.category || 'general',
+      msgs: entry.count || Math.floor(Math.random()*10)+2,
+      time: new Date(entry.time).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}),
+      status: statuses[Math.floor(Math.random()*statuses.length)],
+      csat: (Math.random()*1.5+3.5).toFixed(1)
+    });
+  });
+
+  // Fill with mock data
+  while(tableData.length < 10) {
+    const mins = Math.floor(Math.random()*300);
+    const d = new Date(Date.now() - mins*60000);
+    tableData.push({
+      session: 'SA-' + Math.random().toString(36).substr(2,8).toUpperCase(),
+      cat: categories[Math.floor(Math.random()*categories.length)],
+      msgs: Math.floor(Math.random()*14)+2,
+      time: d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}),
+      status: statuses[Math.floor(Math.random()*statuses.length)],
+      csat: (Math.random()*1.5+3.5).toFixed(1)
+    });
+  }
+
+  tbody.innerHTML = tableData.slice(0,10).map(row => `
+    <tr>
+      <td><span style="font-family:monospace;color:var(--accent);font-size:11px;">${row.session}</span></td>
+      <td><span class="cat-tag">${catEmoji[row.cat] || '💬'} ${row.cat}</span></td>
+      <td>${row.msgs} msgs</td>
+      <td style="color:var(--text-muted);">${row.time}</td>
+      <td><span class="status-pill ${row.status.cls}">${row.status.label}</span></td>
+      <td>
+        <span style="color:${row.csat>=4.5?'var(--accent3)':row.csat>=3.5?'var(--accent4)':'var(--accent2)'};">
+          ★ ${row.csat}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+}
+
+generateTableRows();
+
+function refreshDashboard() {
+  // Simulate refresh with slight value changes
+  const s1 = document.getElementById('s1');
+  const s3 = document.getElementById('s3');
+  s1.textContent = (240 + Math.floor(Math.random()*20)).toString();
+  s3.textContent = (93 + Math.random()*3).toFixed(1) + '%';
+  generateTableRows();
+
+  const btn = document.querySelector('.refresh-btn');
+  btn.textContent = '✅ Refreshed';
+  setTimeout(() => btn.textContent = '🔄 Refresh', 2000);
+}
+
+// Auto-refresh every 30s
+setInterval(() => {
+  generateTableRows();
+}, 30000);
+</script>
+</body>
+</html>

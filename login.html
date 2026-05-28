@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ShopAssist AI — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;
+  --accent:#6c63ff;--accent2:#ff6584;--accent3:#43e97b;
+  --text:#e8e8f0;--text-muted:#7a7a9a;--glow:0 0 30px rgba(108,99,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 60% at 10% 50%,rgba(108,99,255,0.15) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 40% at 90% 20%,rgba(255,101,132,0.1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 90%,rgba(67,233,123,0.07) 0%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
+
+/* Nav */
+nav{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;background:rgba(10,10,15,0.9);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo-icon{
+  width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;box-shadow:var(--glow);
+}
+.nav-logo h1{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.back-link{
+  padding:7px 16px;border-radius:9px;background:var(--surface2);
+  border:1px solid var(--border);color:var(--text-muted);
+  font-size:12px;text-decoration:none;transition:all 0.2s;
+}
+.back-link:hover{color:var(--text);border-color:var(--accent);}
+
+/* Main layout */
+main{
+  position:relative;z-index:1;
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:48px 20px;
+}
+.auth-container{
+  width:100%;max-width:420px;
+  animation:fadeSlideUp 0.5s ease;
+}
+
+/* Tabs */
+.tabs{
+  display:flex;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:4px;margin-bottom:28px;
+}
+.tab{
+  flex:1;padding:10px;border-radius:11px;border:none;
+  background:transparent;color:var(--text-muted);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.tab.active{
+  background:linear-gradient(135deg,var(--accent),#9b59b6);
+  color:#fff;box-shadow:0 0 15px rgba(108,99,255,0.3);
+}
+
+/* Card */
+.auth-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:32px;
+}
+.auth-card h2{
+  font-family:'Syne',sans-serif;font-size:24px;font-weight:800;
+  margin-bottom:6px;
+}
+.auth-card p{font-size:13px;color:var(--text-muted);margin-bottom:28px;line-height:1.5;}
+
+/* Form elements */
+.form-group{margin-bottom:18px;}
+.form-group label{
+  display:block;font-size:12px;font-weight:500;
+  color:var(--text-muted);margin-bottom:7px;letter-spacing:0.3px;
+}
+.form-control{
+  width:100%;padding:11px 14px;border-radius:11px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:border-color 0.2s;
+}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 15px rgba(108,99,255,0.1);}
+.form-control::placeholder{color:var(--text-muted);}
+
+/* Role selector */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.role-option{
+  border:1.5px solid var(--border);border-radius:11px;
+  padding:12px;cursor:pointer;transition:all 0.2s;text-align:center;
+}
+.role-option.selected{border-color:var(--accent);background:rgba(108,99,255,0.1);}
+.role-option:hover{border-color:var(--accent);}
+.role-option .role-icon{font-size:22px;margin-bottom:6px;}
+.role-option .role-name{font-size:12px;font-weight:500;}
+.role-option .role-desc{font-size:10px;color:var(--text-muted);margin-top:2px;}
+
+/* Submit button */
+.btn-submit{
+  width:100%;padding:13px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#9b59b6);
+  border:none;color:#fff;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;
+  box-shadow:0 0 20px rgba(108,99,255,0.3);
+  transition:all 0.2s;margin-top:6px;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(108,99,255,0.5);}
+.btn-submit:active{transform:translateY(0);}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+.divider span{font-size:11px;color:var(--text-muted);}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Social buttons */
+.social-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-social{
+  padding:10px;border-radius:11px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+  font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-social:hover{border-color:var(--accent);transform:translateY(-1px);}
+
+/* Alert */
+.alert{
+  padding:11px 14px;border-radius:10px;font-size:12px;
+  margin-bottom:16px;display:none;
+  animation:fadeSlideUp 0.3s ease;
+}
+.alert.success{background:rgba(67,233,123,0.1);border:1px solid rgba(67,233,123,0.3);color:var(--accent3);}
+.alert.error{background:rgba(255,101,132,0.1);border:1px solid rgba(255,101,132,0.3);color:var(--accent2);}
+.alert.show{display:block;}
+
+/* Footer */
+.auth-footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px;}
+.auth-footer a{color:var(--accent);text-decoration:none;}
+
+/* Demo creds */
+.demo-creds{
+  background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);
+  border-radius:12px;padding:14px;margin-top:20px;
+}
+.demo-creds p{font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:500;}
+.demo-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;margin-bottom:4px;
+}
+.demo-val{
+  background:var(--surface2);border-radius:5px;padding:2px 7px;
+  font-family:monospace;color:var(--accent);font-size:10px;cursor:pointer;
+}
+
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🛍️</div>
+    <h1>ShopAssist AI</h1>
+  </div>
+  <a href="index.html" class="back-link">← Back to Home</a>
+</nav>
+
+<main>
+  <div class="auth-container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login', this)">Sign In</button>
+      <button class="tab" onclick="switchTab('register', this)">Create Account</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="tab-login">
+      <div class="auth-card">
+        <h2>Welcome back 👋</h2>
+        <p>Sign in to your account to access support history and manage orders.</p>
+
+        <div class="alert" id="login-alert"></div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" class="form-control" id="login-email" placeholder="you@example.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" id="login-pass" placeholder="••••••••"/>
+        </div>
+        <button class="btn-submit" onclick="handleLogin()">Sign In →</button>
+
+        <div class="divider"><span>or continue with</span></div>
+        <div class="social-btns">
+          <button class="btn-social" onclick="socialLogin('Google')">🔵 Google</button>
+          <button class="btn-social" onclick="socialLogin('GitHub')">⚫ GitHub</button>
+        </div>
+      </div>
+
+      <div class="demo-creds">
+        <p>🎯 Demo Credentials (click to fill)</p>
+        <div class="demo-row">
+          <span>Customer:</span>
+          <span class="demo-val" onclick="fillLogin('customer@demo.com','demo123')">customer@demo.com / demo123</span>
+        </div>
+        <div class="demo-row">
+          <span>Admin:</span>
+          <span class="demo-val" onclick="fillLogin('admin@demo.com','admin123')">admin@demo.com / admin123</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="tab-register" style="display:none;">
+      <div class="auth-card">
+        <h2>Join ShopAssist AI ✨</h2>
+        <p>Create your account to track orders, manage returns, and get 24/7 support.</p>
+
+        <div class="alert" id="reg-alert"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" class="form-control" id="reg-fname" placeholder="Rahul"/>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" class="form-control" id="reg-lname" placeholder="Sharma"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" class="form-control" id="reg-email" placeholder="you@example.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" id="reg-pass" placeholder="Min. 8 characters"/>
+        </div>
+        <div class="form-group">
+          <label>Account Type</label>
+          <div class="role-grid">
+            <div class="role-option selected" id="role-customer" onclick="selectRole('customer')">
+              <div class="role-icon">🛍️</div>
+              <div class="role-name">Customer</div>
+              <div class="role-desc">Shop & get support</div>
+            </div>
+            <div class="role-option" id="role-business" onclick="selectRole('business')">
+              <div class="role-icon">🏢</div>
+              <div class="role-name">Business</div>
+              <div class="role-desc">Admin access</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="handleRegister()">Create Account →</button>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      <p>By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
+    </div>
+  </div>
+</main>
+
+<script>
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function fillLogin(email, pass) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-pass').value = pass;
+}
+
+function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  if(!email || !pass) { showAlert('login-alert','Please fill in all fields.','error'); return; }
+
+  // Simulate login
+  setTimeout(() => {
+    if(email === 'admin@demo.com' && pass === 'admin123') {
+      showAlert('login-alert','✅ Welcome back, Admin! Redirecting to dashboard...','success');
+      setTimeout(() => window.location.href = 'admin.html', 1200);
+    } else if(email === 'customer@demo.com' && pass === 'demo123') {
+      showAlert('login-alert','✅ Welcome back! Redirecting to chat...','success');
+      setTimeout(() => window.location.href = 'chat.html', 1200);
+    } else {
+      showAlert('login-alert','❌ Invalid credentials. Try demo accounts below.','error');
+    }
+  }, 600);
+}
+
+function handleRegister() {
+  const fname = document.getElementById('reg-fname').value.trim();
+  const lname = document.getElementById('reg-lname').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value.trim();
+  if(!fname || !email || !pass) { showAlert('reg-alert','Please fill in all required fields.','error'); return; }
+  if(pass.length < 8) { showAlert('reg-alert','Password must be at least 8 characters.','error'); return; }
+  if(!email.includes('@')) { showAlert('reg-alert','Please enter a valid email address.','error'); return; }
+
+  showAlert('reg-alert',`✅ Account created for ${fname}! Redirecting to chat...`,'success');
+  setTimeout(() => window.location.href = 'chat.html', 1500);
+}
+
+function selectRole(role) {
+  document.querySelectorAll('.role-option').forEach(r => r.classList.remove('selected'));
+  document.getElementById('role-' + role).classList.add('selected');
+}
+
+function socialLogin(provider) {
+  const btn = event.target;
+  const original = btn.textContent;
+  btn.textContent = '⏳ Connecting...';
+  setTimeout(() => {
+    btn.textContent = original;
+    showAlert('login-alert', `✅ ${provider} auth successful! Redirecting...`, 'success');
+    setTimeout(() => window.location.href = 'chat.html', 1200);
+  }, 1200);
+}
+</script>
+</body>
+</html>

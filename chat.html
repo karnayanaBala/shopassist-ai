@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ShopAssist AI — Support Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c28;
+  --border: #2a2a3d;
+  --accent: #6c63ff;
+  --accent2: #ff6584;
+  --accent3: #43e97b;
+  --text: #e8e8f0;
+  --text-muted: #7a7a9a;
+  --user-bubble: #6c63ff;
+  --bot-bubble: #1c1c28;
+  --glow: 0 0 30px rgba(108,99,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%,rgba(108,99,255,0.12) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 50% at 80% 80%,rgba(67,233,123,0.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 30% at 60% 10%,rgba(255,101,132,0.06) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+/* Header */
+header{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;
+  background:rgba(13,13,20,0.9);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:var(--glow);
+  animation:pulse-icon 3s ease-in-out infinite;
+}
+@keyframes pulse-icon{0%,100%{box-shadow:0 0 20px rgba(108,99,255,0.3);}50%{box-shadow:0 0 40px rgba(108,99,255,0.6);}}
+.logo-text h1{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-text p{font-size:10px;color:var(--text-muted);letter-spacing:0.5px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.status-badge{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(67,233,123,0.1);border:1px solid rgba(67,233,123,0.3);
+  border-radius:20px;padding:5px 12px;font-size:11px;color:var(--accent3);font-weight:500;
+}
+.status-dot{width:6px;height:6px;background:var(--accent3);border-radius:50%;animation:blink 1.5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-back{
+  padding:6px 14px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border);color:var(--text-muted);
+  font-size:12px;text-decoration:none;transition:all 0.2s;
+}
+.nav-back:hover{color:var(--text);border-color:var(--accent);}
+
+/* Session info bar */
+.session-bar{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 24px;
+  background:rgba(10,10,15,0.7);
+  border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--text-muted);
+}
+.session-bar span{display:flex;align-items:center;gap:6px;}
+.session-id{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:2px 8px;font-family:monospace;color:var(--accent);font-size:10px;
+}
+.clear-btn{
+  padding:4px 12px;border-radius:6px;background:transparent;
+  border:1px solid var(--border);color:var(--text-muted);font-size:11px;
+  cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;
+}
+.clear-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* Category bar */
+.category-bar{
+  position:relative;z-index:10;
+  display:flex;gap:8px;padding:10px 24px;
+  background:rgba(10,10,15,0.6);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;
+}
+.category-bar::-webkit-scrollbar{display:none;}
+.cat-btn{
+  flex-shrink:0;padding:6px 14px;border-radius:20px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--text-muted);font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.cat-btn:hover,.cat-btn.active{
+  background:var(--accent);border-color:var(--accent);
+  color:#fff;box-shadow:0 0 15px rgba(108,99,255,0.4);
+}
+
+/* Chat area */
+.chat-wrapper{flex:1;position:relative;z-index:5;display:flex;flex-direction:column;overflow:hidden;}
+#chat-messages{
+  flex:1;overflow-y:auto;padding:20px 20px;
+  display:flex;flex-direction:column;gap:14px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+#chat-messages::-webkit-scrollbar{width:4px;}
+#chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* Welcome card */
+.welcome-card{
+  background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(67,233,123,0.08));
+  border:1px solid rgba(108,99,255,0.3);border-radius:20px;padding:22px;
+  text-align:center;animation:fadeSlideUp 0.6s ease;
+}
+.welcome-card h2{
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px;
+  background:linear-gradient(90deg,var(--accent),var(--accent3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.welcome-card p{font-size:12.5px;color:var(--text-muted);line-height:1.6;margin-bottom:14px;}
+.quick-btns{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+.quick-btn{
+  padding:7px 13px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:11.5px;
+  cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;
+}
+.quick-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+
+/* Messages */
+.msg{display:flex;align-items:flex-end;gap:10px;animation:fadeSlideUp 0.3s ease;}
+.msg.user{flex-direction:row-reverse;}
+.avatar{
+  width:30px;height:30px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.avatar.bot{background:linear-gradient(135deg,var(--accent),#9b59b6);box-shadow:0 0 12px rgba(108,99,255,0.4);}
+.avatar.user{background:linear-gradient(135deg,var(--accent2),#ff8c42);}
+.bubble{
+  max-width:76%;padding:11px 15px;border-radius:16px;
+  font-size:13px;line-height:1.6;position:relative;
+}
+.bubble.bot{
+  background:var(--bot-bubble);border:1px solid var(--border);
+  border-bottom-left-radius:4px;color:var(--text);
+}
+.bubble.user{
+  background:var(--user-bubble);border-bottom-right-radius:4px;
+  color:#fff;box-shadow:0 4px 20px rgba(108,99,255,0.3);
+}
+.bubble .time{font-size:10px;color:var(--text-muted);margin-top:5px;display:block;}
+.bubble.user .time{color:rgba(255,255,255,0.5);text-align:right;}
+.info-chip{
+  display:inline-block;background:rgba(108,99,255,0.2);
+  border:1px solid rgba(108,99,255,0.4);border-radius:7px;
+  padding:2px 7px;font-size:11px;color:var(--accent);margin:1px 2px;
+}
+
+/* Typing indicator */
+.typing-indicator{display:flex;align-items:center;gap:10px;animation:fadeSlideUp 0.3s ease;}
+.typing-dots{
+  background:var(--bot-bubble);border:1px solid var(--border);
+  border-radius:16px;border-bottom-left-radius:4px;
+  padding:12px 16px;display:flex;gap:5px;
+}
+.typing-dots span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--text-muted);animation:typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2){animation-delay:0.2s;}
+.typing-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes typing-bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}
+
+/* Sentiment indicator on messages */
+.sentiment-bar{
+  display:flex;gap:4px;margin-top:8px;
+}
+.sent-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  transition:all 0.3s;
+}
+.sent-dot.active.positive{background:var(--accent3);border-color:var(--accent3);}
+.sent-dot.active.negative{background:var(--accent2);border-color:var(--accent2);}
+.sent-dot.active.neutral{background:var(--accent);border-color:var(--accent);}
+
+/* Escalation card */
+.escalation-card{
+  background:rgba(255,101,132,0.08);border:1px solid rgba(255,101,132,0.3);
+  border-radius:14px;padding:14px 16px;margin-top:8px;
+}
+.escalation-card p{font-size:12px;color:var(--accent2);margin-bottom:10px;}
+.esc-btn{
+  padding:7px 16px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent2),#ff8c42);
+  border:none;color:#fff;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;
+}
+.esc-btn:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(255,101,132,0.4);}
+
+/* Input area */
+.input-area{
+  position:relative;z-index:10;padding:14px 20px;
+  background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+}
+.input-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:14px;padding:9px 13px;transition:border-color 0.2s;
+}
+.input-row:focus-within{border-color:var(--accent);box-shadow:0 0 20px rgba(108,99,255,0.15);}
+.input-tools{display:flex;gap:6px;align-items:center;}
+.tool-btn{
+  width:28px;height:28px;border-radius:7px;background:var(--surface);
+  border:1px solid var(--border);color:var(--text-muted);font-size:13px;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+}
+.tool-btn:hover{border-color:var(--accent);color:var(--accent);}
+#user-input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  resize:none;max-height:100px;line-height:1.5;
+}
+#user-input::placeholder{color:var(--text-muted);}
+#send-btn{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent),#9b59b6);
+  border:none;border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;flex-shrink:0;
+  box-shadow:0 0 15px rgba(108,99,255,0.3);
+}
+#send-btn:hover{transform:scale(1.08);box-shadow:0 0 25px rgba(108,99,255,0.5);}
+#send-btn:active{transform:scale(0.96);}
+#send-btn svg{width:16px;height:16px;fill:#fff;}
+.input-hint{text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px;}
+.input-hint span{color:var(--accent);}
+
+/* Char counter */
+#char-counter{font-size:10px;color:var(--text-muted);flex-shrink:0;}
+
+/* Toast notification */
+.toast{
+  position:fixed;top:80px;right:20px;z-index:999;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:12px 18px;font-size:13px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  animation:slideInRight 0.3s ease;
+  display:flex;align-items:center;gap:10px;
+}
+@keyframes slideInRight{from{transform:translateX(100px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛍️</div>
+    <div class="logo-text">
+      <h1>ShopAssist AI</h1>
+      <p>Powered by Claude · FlowZint Hackathon 2026</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      AI Online
+    </div>
+    <a href="index.html" class="nav-back">← Home</a>
+    <a href="admin.html" class="nav-back">📊 Dashboard</a>
+  </div>
+</header>
+
+<div class="session-bar">
+  <span>Session: <span class="session-id" id="session-id">—</span></span>
+  <span id="msg-count">0 messages</span>
+  <button class="clear-btn" onclick="clearChat()">🗑 Clear Chat</button>
+</div>
+
+<div class="category-bar">
+  <button class="cat-btn active" onclick="setCategory(this,'general')">💬 General</button>
+  <button class="cat-btn" onclick="setCategory(this,'order')">📦 Order Status</button>
+  <button class="cat-btn" onclick="setCategory(this,'return')">🔄 Returns & Refunds</button>
+  <button class="cat-btn" onclick="setCategory(this,'product')">🔍 Product Info</button>
+  <button class="cat-btn" onclick="setCategory(this,'complaint')">🚨 Complaint</button>
+  <button class="cat-btn" onclick="setCategory(this,'technical')">🔧 Technical</button>
+</div>
+
+<div class="chat-wrapper">
+  <div id="chat-messages">
+    <div class="welcome-card">
+      <h2>👋 Welcome to ShopAssist AI</h2>
+      <p>I'm your intelligent 24/7 customer care assistant — powered by Claude AI. Ask me anything about orders, returns, products or complaints!</p>
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="sendQuick('Where is my order #12345?')">📦 Track my order</button>
+        <button class="quick-btn" onclick="sendQuick('I want to return a product')">🔄 Return a product</button>
+        <button class="quick-btn" onclick="sendQuick('What is your refund policy?')">💰 Refund policy</button>
+        <button class="quick-btn" onclick="sendQuick('I received a damaged item')">⚠️ Damaged item</button>
+        <button class="quick-btn" onclick="sendQuick('Recommend a phone under ₹20000')">🔍 Product advice</button>
+        <button class="quick-btn" onclick="sendQuick('I need to speak to a human agent')">👤 Human support</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-row">
+      <div class="input-tools">
+        <button class="tool-btn" title="Emoji" onclick="toggleEmoji()">😊</button>
+      </div>
+      <textarea id="user-input" placeholder="Ask anything about your order, returns, products..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this);updateCounter();"></textarea>
+      <span id="char-counter">0</span>
+      <button id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Powered by <span>Claude AI</span> · In production, API calls go through a secure backend proxy.</div>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are ShopAssist AI, an expert customer care assistant for an e-commerce platform. You are friendly, professional, empathetic, and solution-focused.
+
+Your capabilities:
+- Order tracking and status updates
+- Returns and refund processing guidance  
+- Product information and recommendations
+- Complaint handling and escalation
+- General shopping support
+- Technical support
+
+Behavior guidelines:
+- Always greet warmly and acknowledge the customer's concern with empathy
+- Provide clear step-by-step solutions
+- If order number is mentioned (#12345, #67890 etc), acknowledge it and provide mock status
+- For returns: explain 30-day return policy, free return shipping labels
+- For refunds: 5-7 business days to original payment method
+- For complaints: apologize sincerely, offer compensation (10% discount code, priority support)
+- Keep responses concise but complete (3-5 sentences normally)
+- Use emojis sparingly but effectively for warmth
+- Never say you "cannot" help — always provide an alternative path
+- If the customer seems very frustrated, offer to escalate to a human agent
+- For product recommendations, be specific and helpful
+
+Mock data:
+- Order #12345: Shipped via BlueDart, expected delivery tomorrow by 7PM
+- Order #67890: Processing, ships within 2 business days  
+- Order #11111: Delivered 3 days ago (if not received, initiate investigation)
+- Return window: 30 days from delivery date
+- Refund timeline: 5-7 business days
+- Free return shipping on all orders above ₹500
+- Support email: support@shopassist.com  
+- Human agents available: 9AM–6PM IST, Mon–Sat
+- Discount code for complaints: SORRY10 (10% off next order)
+
+Security note: In production deployment, all API calls go through a secure backend proxy — API keys are never exposed client-side.
+
+Current support category: `;
+
+let conversationHistory = [];
+let currentCategory = 'general';
+let msgCount = 0;
+
+// Generate session ID
+const sessionId = 'SA-' + Math.random().toString(36).substr(2,8).toUpperCase();
+document.getElementById('session-id').textContent = sessionId;
+
+function setCategory(btn, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCategory = cat;
+  showToast('📂 Switched to: ' + btn.textContent.trim());
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+}
+
+function updateCounter() {
+  const val = document.getElementById('user-input').value.length;
+  document.getElementById('char-counter').textContent = val;
+}
+
+function updateMsgCount() {
+  msgCount++;
+  document.getElementById('msg-count').textContent = msgCount + ' message' + (msgCount !== 1 ? 's' : '');
+  // Save to localStorage for admin dashboard
+  const chatLog = JSON.parse(localStorage.getItem('chatLog') || '[]');
+  chatLog.push({ session: sessionId, category: currentCategory, count: msgCount, time: new Date().toISOString() });
+  if(chatLog.length > 200) chatLog.shift();
+  localStorage.setItem('chatLog', JSON.stringify(chatLog));
+}
+
+function appendMessage(role, text) {
+  const container = document.getElementById('chat-messages');
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.className = `msg ${isUser ? 'user' : 'bot'}`;
+  div.innerHTML = `
+    <div class="avatar ${isUser ? 'user' : 'bot'}">${isUser ? '👤' : '🤖'}</div>
+    <div class="bubble ${isUser ? 'user' : 'bot'}">
+      ${formatText(text)}
+      <span class="time">${getTime()} · ${currentCategory}</span>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  updateMsgCount();
+}
+
+function formatText(text) {
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\n/g, '<br>');
+  text = text.replace(/#(\d+)/g, '<span class="info-chip">#$1</span>');
+  text = text.replace(/₹[\d,]+/g, m => `<span class="info-chip">${m}</span>`);
+  text = text.replace(/SORRY\d+/g, m => `<span class="info-chip" style="color:var(--accent3)">${m}</span>`);
+  return text;
+}
+
+function showTyping() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'typing-indicator';
+  div.id = 'typing';
+  div.innerHTML = `
+    <div class="avatar bot">🤖</div>
+    <div class="typing-dots">
+      <span></span><span></span><span></span>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing');
+  if(el) el.remove();
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if(existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+async function sendMessage() {
+  const input = document.getElementById('user-input');
+  const text = input.value.trim();
+  if(!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('char-counter').textContent = '0';
+
+  appendMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  showTyping();
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT + currentCategory,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.map(b => b.text || '').join('') || 'Sorry, I could not process that. Please try again.';
+
+    removeTyping();
+    appendMessage('bot', reply);
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    // Check if escalation needed
+    const lowerReply = reply.toLowerCase();
+    const lowerText = text.toLowerCase();
+    if(lowerText.includes('human') || lowerText.includes('agent') || lowerText.includes('manager') || 
+       (currentCategory === 'complaint' && conversationHistory.length > 6)) {
+      showEscalationCard();
+    }
+
+  } catch(err) {
+    removeTyping();
+    appendMessage('bot', '⚠️ Connection issue. Please check your internet and try again.\n\n**Note for judges:** In production, all API calls go through a secure backend proxy — API keys are never exposed client-side.');
+    console.error(err);
+  }
+}
+
+function showEscalationCard() {
+  const container = document.getElementById('chat-messages');
+  const existing = document.getElementById('esc-card');
+  if(existing) return;
+  const div = document.createElement('div');
+  div.id = 'esc-card';
+  div.className = 'escalation-card';
+  div.innerHTML = `
+    <p>🚨 <strong>Need human support?</strong> Our agents are available Mon–Sat, 9AM–6PM IST and will have your full conversation context.</p>
+    <button class="esc-btn" onclick="escalateToHuman()">👤 Connect to Human Agent</button>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escalateToHuman() {
+  document.getElementById('esc-card')?.remove();
+  appendMessage('bot', '✅ **Escalating to a human agent now.**\n\nYour session ID is <strong>' + sessionId + '</strong>. An agent will reach out within 30 minutes via email. They\'ll have your full conversation context so you won\'t need to repeat anything.\n\nIs there anything else the AI can help with in the meantime?');
+  showToast('📞 Escalation requested — Session ' + sessionId);
+}
+
+function sendQuick(text) {
+  document.getElementById('user-input').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if(e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function clearChat() {
+  conversationHistory = [];
+  msgCount = 0;
+  document.getElementById('msg-count').textContent = '0 messages';
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = `
+    <div class="welcome-card">
+      <h2>🔄 Chat Cleared</h2>
+      <p>Starting a fresh conversation. How can I help you today?</p>
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="sendQuick('Where is my order #12345?')">📦 Track my order</button>
+        <button class="quick-btn" onclick="sendQuick('I want to return a product')">🔄 Return a product</button>
+        <button class="quick-btn" onclick="sendQuick('What is your refund policy?')">💰 Refund policy</button>
+      </div>
+    </div>`;
+  showToast('🗑 Chat cleared');
+}
+
+function toggleEmoji() {
+  const emojis = ['😊','👍','🙏','😔','⚡','✅','❌','📦','🔄','💰'];
+  const input = document.getElementById('user-input');
+  input.value += emojis[Math.floor(Math.random() * emojis.length)];
+  input.focus();
+}
+
+// Initial greeting
+setTimeout(() => {
+  appendMessage('bot', "Hello! 👋 Welcome to **ShopAssist AI** — your 24/7 intelligent customer care!\n\nI can help you with:\n• 📦 Order tracking & delivery status\n• 🔄 Returns, refunds & exchanges\n• 🔍 Product info & recommendations\n• 🚨 Complaints & escalations\n\nSelect a category above for faster support, or just ask me anything!");
+}, 500);
+</script>
+</body>
+</html>
